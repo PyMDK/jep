@@ -266,6 +266,25 @@ static PyObject* pyjobject_getJavaClassName(PyJObject* pyjob)
     return pyClassName;
 }
 
+static PyObject* pyjobject_getJavaClass(PyJObject* pyjob)
+{
+    JNIEnv *env = pyembed_get_env();
+    jobject jobj = pyjob->clazz;
+    if (jobj == NULL) {
+        Py_RETURN_NONE;
+    }
+
+    PyTypeObject* type = PyJType_Get(env, JCLASS_TYPE);
+    if (!type) {
+        return NULL;
+    }
+
+    PyObject* result = PyJObject_New(env, type, jobj, JCLASS_TYPE);
+    Py_DECREF(type);
+
+    return result;
+}
+
 static PyMethodDef pyjobject_methods[] = {
     {
         "synchronized",
@@ -283,6 +302,7 @@ static PyMethodDef pyjobject_methods[] = {
  */
 static PyGetSetDef pyjobject_getset[] = {
     {"java_name", (getter) pyjobject_getJavaClassName, NULL},
+    {"class_", (getter) pyjobject_getJavaClass, NULL},
     {NULL} /* Sentinel */
 };
 
